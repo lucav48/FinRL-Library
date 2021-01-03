@@ -1,6 +1,6 @@
 # Custom config
 #results/
-
+venv/*
 
 # remove DS_Store
 **/.DS_Store
