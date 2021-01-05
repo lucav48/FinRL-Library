@@ -78,14 +78,15 @@ Furthermore, we incorporated three application demonstrations, namely single sto
 ## Implemented Algorithms
 <img src=figs/alg_compare.PNG width="800">
 
-## Medium Blogs
+## Medium Blogs and Related Reports
 [FinRL for Quantitative Finance: Tutorial for Single Stock Trading](https://towardsdatascience.com/finrl-for-quantitative-finance-tutorial-for-single-stock-trading-37d6d7c30aac)
 
 [FinRL for Quantitative Finance: Tutorial for Multiple Stock Trading](https://towardsdatascience.com/finrl-for-quantitative-finance-tutorial-for-multiple-stock-trading-7b00763b7530)
 
 [FinRL for Quantitative Finance: Tutorial for Portfolio Allocation](https://towardsdatascience.com/finrl-for-quantitative-finance-tutorial-for-portfolio-allocation-9b417660c7cd)
 
-## Related Reports
+[Analyticsindiamag.com] [How To Automate The Stock Market Using FinRL (Deep Reinforcement Learning Library)?](https://analyticsindiamag.com/stock-market-prediction-using-finrl/)
+
 【量化投资与机器学习】[基于深度强化学习的股票交易策略框架（代码+文档)](https://www.mdeditor.tw/pl/p5Gg)
 
 ## Installation:
@@ -100,6 +101,18 @@ Install the unstable development version of FinRL:
 pip install git+https://github.com/AI4Finance-LLC/FinRL-Library.git
 ```
 
+## Docker Installation
+
+Build the container:
+```bash
+$ docker build -f docker/Dockerfile -t finrl docker/
+```
+
+Start the container
+Note: The default container run starts jupyter lab in the root directory, allowing you to run scripts, notebooks, etc.
+```bash
+$ docker run -it --rm -v ${PWD}:/home -p 8888:8888 finrl
+```
 
 ### Prerequisites
 For [OpenAI Baselines](https://github.com/openai/baselines), you'll need system packages CMake, OpenMPI and zlib. Those can be installed as follows
@@ -141,7 +154,10 @@ To activate a virtualenv:
 ```
 source venv/bin/activate
 ```
-
+To activate a virtualenv on windows:
+```
+venv\Scripts\activate
+```
 ## Dependencies
 
 The script has been tested running under **Python >= 3.6.0**, with the folowing packages installed:
@@ -204,7 +220,7 @@ The stock data we use is pulled from Yahoo Finance API
 @article{finrl2020,
     author  = {Liu, Xiao-Yang and Yang, Hongyang and Chen, Qian and Zhang, Runjia and Yang, Liuqing and Xiao, Bowen and Wang, Christina Dan},
     journal = {Deep RL Workshop, NeurIPS 2020},
-    title   = {{FinRL: A Deep Reinforcement Learning Library forAutomated Stock Trading in Quantitative Finance}},
+    title   = {FinRL: A Deep Reinforcement Learning Library for Automated Stock Trading in Quantitative Finance},
     url     = {},
     year    = {2020}
 }
