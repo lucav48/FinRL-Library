@@ -26,6 +26,7 @@ class StockTradingEnv(gym.Env):
                 turbulence_threshold=None,
                 make_plots = False, 
                 print_verbosity = 10,
+                init_state=None,
                 day = 0, iteration=''):
         self.day = day
         self.df = df
@@ -45,6 +46,7 @@ class StockTradingEnv(gym.Env):
         self.print_verbosity = print_verbosity
         self.turbulence_threshold = turbulence_threshold
         # initalize state
+        self.initial_state = init_state
         self.state = self._initiate_state()
         
         # initialize reward
@@ -216,9 +218,12 @@ class StockTradingEnv(gym.Env):
     def _initiate_state(self):
         if len(self.df.tic.unique())>1:
             # for multiple stock
+            actual_state = [0] * self.stock_dim
+            if self.initial_state is not None:
+                actual_state = self.initial_state
             state = [self.initial_amount] + \
                      self.data.close.values.tolist() + \
-                     [0]*self.stock_dim  + \
+                     actual_state  + \
                      sum([self.data[tech].values.tolist() for tech in self.tech_indicator_list ], [])
         else:
             # for single stock
