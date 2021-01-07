@@ -1,6 +1,17 @@
-# FinRL: A Deep Reinforcement Learning Library for Quantitative Finance
+# FinRL: A Deep Reinforcement Learning Library for Quantitative Finance [![Twitter][1.1]][1] [![Facebook][1.2]][2] [![Google+][1.3]][3] [![Linkedin][1.4]][4]
+[1.1]: http://www.tensorlet.com/wp-content/uploads/2021/01/button_twitter_22x22.png
+[1.2]: http://www.tensorlet.com/wp-content/uploads/2021/01/facebook-button_22x22.png
+[1.3]: http://www.tensorlet.com/wp-content/uploads/2021/01/button_google_22.xx_.png
+[1.4]: http://www.tensorlet.com/wp-content/uploads/2021/01/button_linkedin_22x22.png
+
+[1]: https://twitter.com/intent/tweet?text=FinRL-A-Deep-Reinforcement-Learning-Library-for-Quantitative-Finance%20&url=hhttps://github.com/AI4Finance-LLC/FinRL-Library&hashtags=DRL&hashtags=AI
+[2]: https://www.facebook.com/sharer.php?u=http%3A%2F%2Fgithub.com%2FAI4Finance-LLC%2FFinRL-Library
+[3]: https://plus.google.com/share?url=https://github.com/AI4Finance-LLC/FinRL-Library
+[4]: https://www.linkedin.com/sharing/share-offsite/?url=http%3A%2F%2Fgithub.com%2FAI4Finance-LLC%2FFinRL-Library
 
 [![Downloads](https://pepy.tech/badge/finrl)](https://pepy.tech/project/finrl)
+[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![PyPI](https://img.shields.io/pypi/v/finrl.svg)](https://pypi.org/project/finrl/)
 
 
 FinRL is the open source library for practitioners. To efficiently automate trading, **AI4Finance** provides this educational resource and makes it easier to learn about deep reinforcement learning (DRL) in quantitative finance. 
