@@ -11,7 +11,7 @@ from finrl.config import config
 
 def BackTestStats(account_value, show=False):
     df = account_value.copy()
-    df = get_daily_return(df)
+    df = get_daily_return(df, show)
     DRL_strat = backtest_strat(df)
     perf_func = timeseries.perf_stats
     perf_stats_all = perf_func(
@@ -57,7 +57,7 @@ def BackTestPlot(
 ):
 
     df = account_value.copy()
-    df = get_daily_return(df)
+    df = get_daily_return(df, show=True)
 
     dji, dow_strat = baseline_strat(
         ticker=baseline_ticker, start=baseline_start, end=baseline_end
@@ -92,12 +92,13 @@ def baseline_strat(ticker, start, end):
     return dji, dow_strat
 
 
-def get_daily_return(df):
+def get_daily_return(df, show=False):
     df["daily_return"] = df.account_value.pct_change(1)
     # df=df.dropna()
     sharpe = (252 ** 0.5) * df["daily_return"].mean() / df["daily_return"].std()
 
     annual_return = ((df["daily_return"].mean() + 1) ** 252 - 1) * 100
-    print("annual return: ", annual_return)
-    print("sharpe ratio: ", sharpe)
+    if show:
+        print("annual return: ", annual_return)
+        print("sharpe ratio: ", sharpe)
     return df
