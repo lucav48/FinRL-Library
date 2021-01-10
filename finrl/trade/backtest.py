@@ -9,7 +9,7 @@ from finrl.marketdata.yahoodownloader import YahooDownloader
 from finrl.config import config
 
 
-def BackTestStats(account_value):
+def BackTestStats(account_value, show=False):
     df = account_value.copy()
     df = get_daily_return(df)
     DRL_strat = backtest_strat(df)
@@ -21,7 +21,8 @@ def BackTestStats(account_value):
         transactions=None,
         turnover_denom="AGB",
     )
-    print(perf_stats_all)
+    if show:
+        print(perf_stats_all)
     return perf_stats_all
 
 
@@ -29,6 +30,7 @@ def BaselineStats(
     baseline_ticker="^DJI",
     baseline_start=config.START_TRADE_DATE,
     baseline_end=config.END_DATE,
+    show=False
 ):
 
     dji, dow_strat = baseline_strat(
@@ -42,7 +44,8 @@ def BaselineStats(
         transactions=None,
         turnover_denom="AGB",
     )
-    print(perf_stats_all)
+    if show:
+        print(perf_stats_all)
     return perf_stats_all
 
 
