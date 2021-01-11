@@ -28,7 +28,7 @@ Feel free to leave us feedback: report bugs using Github issues or discuss FinRL
 
 <br/>
 
-<a href="https://join.slack.com/t/ai4financeworkspace/shared_invite/zt-jyaottie-hHqU6TdvuhMHHAMXaLw_~w" target="\_blank">
+<a href="https://join.slack.com/t/ai4financeworkspace/shared_invite/zt-kq0c9het-FCSU6Y986OnSw6Wb5EkEYw" target="\_blank">
 	<div align="center">
 		<img src=figs/join_slack.png width="40%"/>
 	</div>
@@ -249,4 +249,3 @@ We will maintain the open source FinRL library for the "AI + finance" community 
    To help quants have better evaluations, here we maintain benchmarks for many trading tasks, upon which you can improve for your own tasks.
 ## Support live trading
    Supporting live trading can close the simulation-reality gap, it will enable quant to switch to the real market when they are confident with their strategies.
-
