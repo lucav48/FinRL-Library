@@ -1,5 +1,6 @@
 # Custom config
 #results/
+.idea/*
 venv/*
 
 # remove DS_Store
