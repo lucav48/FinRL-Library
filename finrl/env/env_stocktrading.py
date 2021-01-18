@@ -8,6 +8,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pickle
 from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common import logger
+
 
 class StockTradingEnv(gym.Env):
     """A stock trading environment for OpenAI gym"""
@@ -18,7 +20,8 @@ class StockTradingEnv(gym.Env):
                 stock_dim,
                 hmax,                
                 initial_amount,
-                transaction_cost_pct,
+                buy_cost_pct,
+                sell_cost_pct,
                 reward_scaling,
                 state_space,
                 action_space,
@@ -26,14 +29,14 @@ class StockTradingEnv(gym.Env):
                 turbulence_threshold=None,
                 make_plots = False, 
                 print_verbosity = 10,
-                init_state=None,
                 day = 0, iteration=''):
         self.day = day
         self.df = df
         self.stock_dim = stock_dim
         self.hmax = hmax
         self.initial_amount = initial_amount
-        self.transaction_cost_pct =transaction_cost_pct
+        self.buy_cost_pct = buy_cost_pct
+        self.sell_cost_pct = sell_cost_pct
         self.reward_scaling = reward_scaling
         self.state_space = state_space
         self.action_space = action_space
@@ -46,7 +49,6 @@ class StockTradingEnv(gym.Env):
         self.print_verbosity = print_verbosity
         self.turbulence_threshold = turbulence_threshold
         # initalize state
-        self.initial_state = init_state
         self.state = self._initiate_state()
         
         # initialize reward
@@ -65,35 +67,45 @@ class StockTradingEnv(gym.Env):
 
 
     def _sell_stock(self, index, action):
-        # perform sell action based on the sign of the action
-        if self.turbulence_threshold is not None:
-            if self.turbulence>self.turbulence_threshold:
-                # if turbulence goes over threshold, just clear out all positions 
-                if self.state[index+self.stock_dim+1] > 0:
-                    #update balance
-                    self.state[0] += self.state[index+1]*self.state[index+self.stock_dim+1]* \
-                                (1- self.transaction_cost_pct)
-                    self.state[index+self.stock_dim+1] =0
-                    self.cost += self.state[index+1]*self.state[index+self.stock_dim+1]* \
-                                self.transaction_cost_pct
-                    self.trades+=1
-                else:
-                    pass
-        else:
+        def _do_sell_normal():
             # perform sell action based on the sign of the action
             if self.state[index+self.stock_dim+1] > 0:
+                sell_num_shares = min(abs(action),self.state[index+self.stock_dim+1])
+                sell_amount = self.state[index+1]* sell_num_shares * (1- self.sell_cost_pct)
                 #update balance
-                self.state[0] += \
-                self.state[index+1]*min(abs(action),self.state[index+self.stock_dim+1]) * \
-                (1- self.transaction_cost_pct)
+                self.state[0] += sell_amount
 
                 self.state[index+self.stock_dim+1] -= min(abs(action), self.state[index+self.stock_dim+1])
                 self.cost +=self.state[index+1]*min(abs(action),self.state[index+self.stock_dim+1]) * \
-                self.transaction_cost_pct
+                self.sell_cost_pct
                 self.trades+=1
             else:
+                sell_num_shares = 0
                 pass
+            return sell_num_shares
+            
+        # perform sell action based on the sign of the action
+        if self.turbulence_threshold is not None:
+            if self.turbulence>=self.turbulence_threshold:
+                # if turbulence goes over threshold, just clear out all positions 
+                if self.state[index+self.stock_dim+1] > 0:
+                    sell_num_shares = self.state[index+self.stock_dim+1]
+                    sell_amount = self.state[index+1]*sell_num_shares* (1- self.sell_cost_pct)
+                    #update balance
+                    self.state[0] += sell_amount
+                    self.state[index+self.stock_dim+1] =0
+                    self.cost += self.state[index+1]*self.state[index+self.stock_dim+1]* \
+                                self.sell_cost_pct
+                    self.trades+=1
+                else:
+                    sell_num_shares = 0
+                    pass
+            else:
+                sell_num_shares = _do_sell_normal()
+        else:
+            sell_num_shares = _do_sell_normal()
 
+        return sell_num_shares
 
     
     def _buy_stock(self, index, action):
@@ -103,28 +115,32 @@ class StockTradingEnv(gym.Env):
             # print('available_amount:{}'.format(available_amount))
             
             #update balance
-            self.state[0] -= self.state[index+1]*min(available_amount, action)* \
-                              (1+ self.transaction_cost_pct)
+            buy_num_shares = min(available_amount, action)
+            buy_amount = self.state[index+1]* buy_num_shares * (1+ self.buy_cost_pct)
+            self.state[0] -= buy_amount
 
             self.state[index+self.stock_dim+1] += min(available_amount, action)
             
             self.cost+=self.state[index+1]*min(available_amount, action)* \
-                              self.transaction_cost_pct
+                              self.buy_cost_pct
             self.trades+=1
+
+            return buy_num_shares
         # perform buy action based on the sign of the action
         if self.turbulence_threshold is None:
-            _do_buy()
+            buy_num_shares = _do_buy()
         else:
             if self.turbulence< self.turbulence_threshold:
-                _do_buy()
+                buy_num_shares = _do_buy()
             else:
                 pass
+
+        return buy_num_shares
 
     def _make_plot(self):
         plt.plot(self.asset_memory,'r')
         plt.savefig('results/account_value_trade_{}.png'.format(self.episode))
         plt.close()
-
 
     def step(self, actions):
         self.terminal = self.day >= len(self.df.index.unique())-1
@@ -142,23 +158,30 @@ class StockTradingEnv(gym.Env):
                 sharpe = (252**0.5)*df_total_value['daily_return'].mean()/ \
                       df_total_value['daily_return'].std()
             df_rewards = pd.DataFrame(self.rewards_memory)
-            if self.episode%self.print_verbosity ==0:
+            if self.episode % self.print_verbosity == 0:
                 print(f"day: {self.day}, episode: {self.episode}")
-                print(f"begin_total_asset:{self.asset_memory[0]:0.2f}")           
-                print(f"end_total_asset:{end_total_asset:0.2f}")
-                print(f"total_reward:{tot_reward:0.2f}")
+                print(f"begin_total_asset: {self.asset_memory[0]:0.2f}")
+                print(f"end_total_asset: {end_total_asset:0.2f}")
+                print(f"total_reward: {tot_reward:0.2f}")
                 print(f"total_cost: {self.cost:0.2f}")
                 print(f"total_trades: {self.trades}")
-                if df_total_value['daily_return'].std() !=0:
+                if df_total_value['daily_return'].std() != 0:
                     print(f"Sharpe: {sharpe:0.3f}")
                 print("=================================")
-            return self.state, self.reward, self.terminal,{}
+
+            # Add outputs to logger interface
+            logger.record("environment/portfolio_value", end_total_asset)
+            logger.record("environment/total_reward", tot_reward)
+            logger.record("environment/total_reward_pct", (tot_reward / (end_total_asset - tot_reward)) * 100)
+            logger.record("environment/total_cost", self.cost)
+            logger.record("environment/total_trades", self.trades)
+
+            return self.state, self.reward, self.terminal, {}
 
         else:
 
-            actions = actions * self.hmax
-            self.actions_memory.append(actions)
-            #actions = (actions.astype(int))
+            actions = actions * self.hmax #actions initially is scaled between 0 to 1
+            actions = (actions.astype(int)) #convert into integer because we can't by fraction of shares
             if self.turbulence_threshold is not None:
                 if self.turbulence>=self.turbulence_threshold:
                     actions=np.array([-self.hmax]*self.stock_dim)
@@ -172,12 +195,17 @@ class StockTradingEnv(gym.Env):
             buy_index = argsort_actions[::-1][:np.where(actions > 0)[0].shape[0]]
 
             for index in sell_index:
-                # print('take sell action'.format(actions[index]))
-                self._sell_stock(index, actions[index])
+                # print(f"Num shares before: {self.state[index+self.stock_dim+1]}")
+                # print(f'take sell action before : {actions[index]}')
+                actions[index] = self._sell_stock(index, actions[index])
+                # print(f'take sell action after : {actions[index]}')
+                # print(f"Num shares after: {self.state[index+self.stock_dim+1]}")
 
             for index in buy_index:
                 # print('take buy action: {}'.format(actions[index]))
-                self._buy_stock(index, actions[index])
+                actions[index] = self._buy_stock(index, actions[index])
+
+            self.actions_memory.append(actions)
 
             self.day += 1
             self.data = self.df.loc[self.day,:]    
@@ -218,12 +246,9 @@ class StockTradingEnv(gym.Env):
     def _initiate_state(self):
         if len(self.df.tic.unique())>1:
             # for multiple stock
-            actual_state = [0] * self.stock_dim
-            if self.initial_state is not None:
-                actual_state = self.initial_state
             state = [self.initial_amount] + \
                      self.data.close.values.tolist() + \
-                     actual_state  + \
+                     [0]*self.stock_dim  + \
                      sum([self.data[tech].values.tolist() for tech in self.tech_indicator_list ], [])
         else:
             # for single stock

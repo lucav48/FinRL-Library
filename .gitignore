@@ -136,6 +136,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# PyCharm
+.idea
+
 *events.out.tfevents.*
 *.csv
 *.zip
