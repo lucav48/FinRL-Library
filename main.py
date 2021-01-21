@@ -4,6 +4,7 @@ import yfinance as yf
 import pandas as pd
 import os
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 
 from finrl.config import config
 from finrl.marketdata.yahoodownloader import YahooDownloader
@@ -14,6 +15,13 @@ from finrl.model.models import DRLAgent
 from finrl.trade.backtest import BackTestStats, BaselineStats, BackTestPlot
 
 df = pd.read_csv("example.csv")
+scalers_close = []
+for tic in df.tic.unique():
+    data = df.loc[df.tic==tic]
+    scaler = MinMaxScaler()
+    scaler.fit_transform(data["close"].to_numpy().reshape(-1,1))
+    scalers_close.append(scaler)
+df["close"] = MinMaxScaler().fit_transform(df["close"].to_numpy().reshape(-1,1))
 train = data_split(df, '2009-03-12', '2018-12-31')
 trade = data_split(df, '2019-01-01', '2019-12-31')
 stock_dimension = len(train.tic.unique())
@@ -28,7 +36,8 @@ env_kwargs = {
     "stock_dim": stock_dimension,
     "tech_indicator_list": ["rsi", "obv", "adx", "log_return", "kc_low", "kc_up"],
     "action_space": stock_dimension,
-    "reward_scaling": 1e-4
+    "reward_scaling": 1e-4,
+    "scalers": scalers_close
 
 }
 

@@ -125,7 +125,7 @@ class StockTradingEnv(gym.Env):
     def _buy_stock(self, index, action):
 
         def _do_buy():
-            available_amount = self.state[0] // self.state[index+1]
+            available_amount = self.state[0] // self.descale_data(self.state[index+1], index)
             # print('available_amount:{}'.format(available_amount))
             
             #update balance
