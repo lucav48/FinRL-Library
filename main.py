@@ -22,7 +22,8 @@ state_space = 1 + 2 * stock_dimension + 6 * stock_dimension
 env_kwargs = {
     "hmax": 1,
     "initial_amount": 1000,
-    "transaction_cost_pct": 0.001,
+    "buy_cost_pct": 0.001,
+    "sell_cost_pct": 0.001,
     "state_space": state_space,
     "stock_dim": stock_dimension,
     "tech_indicator_list": ["rsi", "obv", "adx", "log_return", "kc_low", "kc_up"],
