@@ -80,8 +80,7 @@ class DRLAgent:
             actions_memory = test_env.env_method(method_name="save_action_memory")
             test_obs, rewards, dones, info = test_env.step(action)
             if dones[0]:
-                print("hit end!")
-
+                # print("hit end!")
                 break
         return account_memory[0], actions_memory[0]
 
