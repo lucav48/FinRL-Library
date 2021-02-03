@@ -10,26 +10,22 @@ from finrl.config import config
 from finrl.marketdata.yahoodownloader import YahooDownloader
 from finrl.preprocessing.preprocessors import FeatureEngineer
 from finrl.preprocessing.data import data_split
-from finrl.env.env_stocktrading import StockTradingEnv
+from finrl.env.env_stocktrading_scaler import StockTradingEnv
 from finrl.model.models import DRLAgent
 from finrl.trade.backtest import BackTestStats, BaselineStats, BackTestPlot
 
 df = pd.read_csv("example.csv")
-scalers_close = []
-for tic in df.tic.unique():
-    data = df.loc[df.tic==tic]
-    scaler = MinMaxScaler()
-    scaler.fit_transform(data["close"].to_numpy().reshape(-1,1))
-    scalers_close.append(scaler)
-df["close"] = MinMaxScaler().fit_transform(df["close"].to_numpy().reshape(-1,1))
+df = df.loc[df.tic=="AAPL"]
+scaler_close = MinMaxScaler(feature_range=(1e-10, 1))
+df["close"] = scaler_close.fit_transform(df["close"].to_numpy().reshape(-1,1))
 train = data_split(df, '2009-03-12', '2018-12-31')
 trade = data_split(df, '2019-01-01', '2019-12-31')
 stock_dimension = len(train.tic.unique())
 state_space = 1 + 2 * stock_dimension + 6 * stock_dimension
 
 env_kwargs = {
-    "hmax": 1,
-    "initial_amount": 1000,
+    "hmax": 1000,
+    "initial_amount": 100000,
     "buy_cost_pct": 0.001,
     "sell_cost_pct": 0.001,
     "state_space": state_space,
@@ -37,7 +33,7 @@ env_kwargs = {
     "tech_indicator_list": ["rsi", "obv", "adx", "log_return", "kc_low", "kc_up"],
     "action_space": stock_dimension,
     "reward_scaling": 1e-4,
-    "scalers": scalers_close
+    "scalers": [scaler_close]
 
 }
 
